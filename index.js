@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const cors = require("cors");
 require("dotenv").config();
@@ -79,6 +79,13 @@ async function run() {
             res.send(buyers);
         })
 
+        app.delete("/allbuyers/:id", async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        })
+
         // seller
 
         app.get("/users/seller/:email", async(req, res) => {
@@ -86,6 +93,20 @@ async function run() {
             const query = {email: email};
             const user = await usersCollection.findOne(query);
             res.send({isSeller: user?.role === "seller"})
+        })
+
+        app.get("/allsellers", async(req, res) => {
+            const role = req.query.role;
+            const query = {role: role};
+            const sellers = await usersCollection.find(query).toArray();
+            res.send(sellers);
+        })
+
+        app.delete("/allsellers/:id", async(req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
         })
 
         // Admin
