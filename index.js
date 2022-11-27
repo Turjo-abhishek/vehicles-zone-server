@@ -70,6 +70,15 @@ async function run() {
             res.status(403).send(" ");
         });
 
+        // buyers
+
+        app.get("/allbuyers", async(req, res) => {
+            const role = req.query.role;
+            const query = {role: role};
+            const buyers = await usersCollection.find(query).toArray();
+            res.send(buyers);
+        })
+
         // seller
 
         app.get("/users/seller/:email", async(req, res) => {
