@@ -27,8 +27,10 @@ async function run() {
         })
         app.get("/categories/:id", async(req, res) => {
             const id = req.params.id;
+           
             const query = {category_id: id};
             const result = await productsCollection.find(query).toArray();
+            console.log(result);
             res.send(result);
         })
 
@@ -39,6 +41,13 @@ async function run() {
             const result = await productsCollection.insertOne(product);
             res.send(result);
         });
+
+        app.get("/vehicles", async(req, res) => {
+            const userEmail = req.query.email;
+            const query = {seller_email: userEmail};
+            const result = await productsCollection.find(query).toArray();
+            res.send(result);
+        })
 
         // Users
 
