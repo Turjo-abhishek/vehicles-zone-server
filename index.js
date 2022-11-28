@@ -19,6 +19,7 @@ async function run() {
         const categoriesCollection = client.db("vehiclesZone").collection("categories");
         const productsCollection = client.db("vehiclesZone").collection("products");
         const usersCollection = client.db("vehiclesZone").collection("users");
+        const bookingsCollection = client.db("vehiclesZone").collection("bookings");
         // Categories
         app.get("/categories", async(req, res) => {
             const query = {};
@@ -27,10 +28,8 @@ async function run() {
         })
         app.get("/categories/:id", async(req, res) => {
             const id = req.params.id;
-           
             const query = {category_id: id};
             const result = await productsCollection.find(query).toArray();
-            console.log(result);
             res.send(result);
         })
 
@@ -48,6 +47,22 @@ async function run() {
             const result = await productsCollection.find(query).toArray();
             res.send(result);
         })
+
+        // bookings
+
+        app.post("/bookings", async(req, res) => {
+            const bookedProduct = req.body;
+            const result = await bookingsCollection.insertOne(bookedProduct);
+            res.send(result);
+        })
+
+        app.get("/orders", async(req, res) => {
+            const userEmail = req.query.email;
+            const query = {buyer_email: userEmail};
+            const result = await bookingsCollection.find(query).toArray();
+            res.send(result);
+        })
+
 
         // Users
 
@@ -70,7 +85,14 @@ async function run() {
             res.status(403).send(" ");
         });
 
-        // buyers
+        // buyer
+
+        app.get("/users/buyer/:email", async(req, res) => {
+            const email = req.params.email;
+            const query = {email: email};
+            const user = await usersCollection.findOne(query);
+            res.send({isBuyer: user?.role === "buyer"})
+        })
 
         app.get("/allbuyers", async(req, res) => {
             const role = req.query.role;
