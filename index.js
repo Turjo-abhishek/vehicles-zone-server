@@ -68,6 +68,26 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/vehicles/:id", async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: ObjectId(id) };
+        const result = await productsCollection.deleteOne(filter);
+        res.send(result);
+      });
+
+      app.patch("/vehicles", async(req, res) => {
+        const vehicleId = req.query.vehicleId;
+        const advertised = req.body.advertised;
+        const filter = {_id : ObjectId(vehicleId)};
+        const updateDoc = {
+            $set: {
+              advertised: advertised
+            },
+          };
+        const result = await productsCollection.updateOne(filter, updateDoc); 
+        res.send(result);
+    })
+
 
     // bookings
 
