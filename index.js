@@ -27,6 +27,7 @@ async function run() {
     const usersCollection = client.db("vehiclesZone").collection("users");
     const bookingsCollection = client.db("vehiclesZone").collection("bookings");
     const paymentsCollection = client.db("vehiclesZone").collection("payments");
+    const advertisesCollection = client.db("vehiclesZone").collection("advertises");
     // Categories
     app.get("/categories", async (req, res) => {
       const query = {};
@@ -85,6 +86,20 @@ async function run() {
             },
           };
         const result = await productsCollection.updateOne(filter, updateDoc); 
+        res.send(result);
+    })
+
+    // advertises
+
+    app.post("/advertises", async(req, res) => {
+        const advertisedProduct = req.body;
+        const result = await advertisesCollection.insertOne(advertisedProduct);
+        res.send(result);
+    })
+
+    app.get("/advertises", async(req, res) => {
+        const query = {};
+        const result = await advertisesCollection.find(query).toArray();
         res.send(result);
     })
 
