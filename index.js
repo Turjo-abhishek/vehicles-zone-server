@@ -18,6 +18,21 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+const verifyJWT = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if(!authHeader){
+        return res.status(401).send("unauthorized access")
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, function(error, decoded){
+        if(error){
+            return res.status(403).send("forbidden access");
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 async function run() {
   try {
     const categoriesCollection = client
@@ -69,14 +84,14 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/vehicles/:id", async (req, res) => {
+    app.delete("/vehicles/:id", verifyJWT, async (req, res) => {
         const id = req.params.id;
         const filter = { _id: ObjectId(id) };
         const result = await productsCollection.deleteOne(filter);
         res.send(result);
       });
 
-      app.patch("/vehicles", async(req, res) => {
+      app.patch("/vehicles", verifyJWT, async(req, res) => {
         const vehicleId = req.query.vehicleId;
         const advertised = req.body.advertised;
         const filter = {_id : ObjectId(vehicleId)};
@@ -91,19 +106,19 @@ async function run() {
 
     // advertises
 
-    app.post("/advertises", async(req, res) => {
+    app.post("/advertises", verifyJWT, async(req, res) => {
         const advertisedProduct = req.body;
         const result = await advertisesCollection.insertOne(advertisedProduct);
         res.send(result);
     })
 
-    app.get("/advertises", async(req, res) => {
+    app.get("/advertises", verifyJWT, async(req, res) => {
         const query = {};
         const result = await advertisesCollection.find(query).toArray();
         res.send(result);
     })
 
-    app.delete("/advertises/:id", async (req, res) => {
+    app.delete("/advertises/:id", verifyJWT, async (req, res) => {
         const id = req.params.id;
         const filter = { vehicle_id: id };
         const result = await advertisesCollection.deleteOne(filter);
@@ -119,7 +134,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/orders", async (req, res) => {
+    app.get("/orders", verifyJWT, async (req, res) => {
       const userEmail = req.query.email;
       const query = { buyer_email: userEmail };
       const result = await bookingsCollection.find(query).toArray();
@@ -140,6 +155,20 @@ async function run() {
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
+
+    app.post("/socialLoginUsers", async(req, res) => {
+        const email = req.query.email;
+        const user = req.body;
+        const find = {email: email};
+        const checked = await usersCollection.findOne(find);
+        if(checked){
+            return res.send("user already saved in database")
+        }
+        else{
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        }
+    })
 
     // JWT
 
@@ -214,7 +243,7 @@ async function run() {
         const result = await usersCollection.updateOne(filter, updatedDoc, options);
         res.send(result);
     });
-    
+
     app.put("/seller/verify/:email", async(req, res) => {
         const email = req.params.email;
         const filter = {seller_email: email};
