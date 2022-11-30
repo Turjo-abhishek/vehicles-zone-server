@@ -103,6 +103,13 @@ async function run() {
         res.send(result);
     })
 
+    app.delete("/advertises/:id", async (req, res) => {
+        const id = req.params.id;
+        const filter = { vehicle_id: id };
+        const result = await advertisesCollection.deleteOne(filter);
+        res.send(result);
+      });
+
 
     // bookings
 
@@ -194,6 +201,42 @@ async function run() {
       const result = await usersCollection.deleteOne(filter);
       res.send(result);
     });
+
+    app.put("/allsellers/:id", async(req, res) => {
+        const id = req.params.id;
+        const filter = {_id: ObjectId(id)};
+        const options = { upsert: true };
+        const updatedDoc = {
+            $set: {
+                verified: true
+            }
+        }
+        const result = await usersCollection.updateOne(filter, updatedDoc, options);
+        res.send(result);
+    });
+    
+    app.put("/seller/verify/:email", async(req, res) => {
+        const email = req.params.email;
+        const filter = {seller_email: email};
+        const options = { upsert: true };
+        const updatedDoc = {
+            $set: {
+                verified: true
+            }
+        }
+        const result = await productsCollection.updateOne(filter, updatedDoc, options);
+        res.send(result);
+    });
+
+    
+
+    // app.get("/sellers/verified/:email", async (req, res) => {
+    //     const email = req.params.email;
+    //     console.log(email);
+    //     const query = { seller_email: email };
+    //     const seller = await usersCollection.findOne(query);
+    //     res.send({ isverified: seller?.verified === true });
+    //   });
 
     // Admin
 
